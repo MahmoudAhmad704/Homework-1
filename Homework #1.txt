@@ -1,0 +1,81 @@
+Homework #1
+-Mahmoud Awad -202120704
+
+Q1
+CREATE TABLE Employee (
+    ID INT PRIMARY KEY,
+    person_name VARCHAR(100) NOT NULL,
+    street VARCHAR(100),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Company (
+    company_name VARCHAR(100) PRIMARY KEY,
+    city VARCHAR(50)
+);
+
+CREATE TABLE Works (
+    ID INT,
+    company_name VARCHAR(100),
+    salary DECIMAL(10, 2),
+    PRIMARY KEY (ID, company_name),
+    FOREIGN KEY (ID) REFERENCES Employee(ID),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+CREATE TABLE Manages (
+    ID INT PRIMARY KEY,
+    manager_id INT,
+    FOREIGN KEY (ID) REFERENCES Employee(ID),
+    FOREIGN KEY (manager_id) REFERENCES Employee(ID)
+);
+
+Q2
+A. Find the ID of each customer of the bank who has an account but not a loan.
+SELECT DISTINCT d.ID
+FROM depositor d
+LEFT JOIN borrower b ON d.ID = b.ID
+WHERE b.ID IS NULL;
+
+B. Find the ID of each customer who lives on the same street and in the same city as customer '12345'.
+SELECT c2.ID
+FROM customer c1
+JOIN customer c2 ON c1.customer_street = c2.customer_street 
+                AND c1.customer_city = c2.customer_city
+WHERE c1.ID = '12345' AND c2.ID != '12345';
+
+C. Find the name of each branch that has at least one customer who has an account in the bank and who lives in "Harrison".
+sql
+
+SELECT DISTINCT b.branch_name
+FROM branch b
+JOIN account a ON b.branch_name = a.branch_name
+JOIN depositor d ON a.account_number = d.account_number
+JOIN customer c ON d.ID = c.ID
+WHERE c.customer_city = 'Harrison';
+
+Q3
+
+A. From the demand table, find the cumulative total sum for qty.
+
+SELECT day, qty,
+    SUM(qty) OVER (ORDER BY day) AS cumQty
+FROM 
+    demand;
+
+
+B. Extract the two worst performing days of each product in terms of number of qty 
+sold. Paraphrasing it: Get the days corresponding to the two minimum most 
+values of qty for each product
+
+SELECT product, day, qty, RN
+FROM (
+    SELECT 
+        product,
+        day,
+        qty,
+        ROW_NUMBER() OVER (PARTITION BY product ORDER BY qty ASC) AS RN
+    FROM sales_data
+) AS ranked_data
+WHERE RN <= 2
+ORDER BY product, RN;
